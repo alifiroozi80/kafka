@@ -1881,12 +1881,117 @@ I have yet to go through the installation, but if any of you have the feeling, h
 ## Introduction
 <div id="Kafka-CLI-Tutorial-Introduction">
 
+In this section, we will learn about some of the most used CLI tools in Kafka, which we will often use in this tutorial. We don't use GUI and those things since we are going to be experts, yeah ;)
+Let's go!
 
+Kafka CLIs:
+
+* They come bundled with the Kafka binaries.
+* If you set the `$PATH` variable correctly (from previous sections), then you should be able to invoke the CLI from anywhere on your computer:
+    ```bash
+    kafka-topics --version
+    ```
+* If you installed Kafka using binaries, it should be either `kafka-topics.sh` (Linux, Mac, Windows-WSL) and `kafka-topics.bat` (Windows non-WSL), `kafka-topics` (Homebrew, APT)
+Use the `--bootstrap-server option anywhere, not --zookeepr (deprecated)
+* Example (More on that in the next section):
+    ```bash
+    kafka-topics --bootstrap-server 127.0.0.1:9092
+    ```
 
 </div> <!-- Introduction -->
 
 ## Kafka Topic CLI
-<div id="Kafka-CLI-Tutorial-Kafka-Topic-CLI"></div> <!-- Kafka Topic CLI -->
+<div id="Kafka-CLI-Tutorial-Kafka-Topic-CLI">
+
+Kafka Topics CLI, i.e., `kafka-topics` is used to create, delete, describe, or change a topic in Kafka.
+
+It is for Kafka Topics management:
+
+1) Create Kafka topics
+2) List Kafka topics
+3) Describe Kafka topics
+4) Increase partitions in a Kafka topic
+5) Delete a Kafka topic
+
+---
+
+Let's list all the topics:
+
+```bash
+kafka-topics --bootstrap-server localhost:9092 --list
+```
+
+It will return an empty line since we haven't created any topic yet, so let's create our first topic:
+
+```bash
+$ kafka-topics --bootstrap-server localhost:9092 --create --topic first-topic
+Created topic first-topic.
+```
+
+The `first-topic` has been created with the default partition setting, which is 1.
+
+How about we modify our partition?
+Let's create our `second-topic`
+
+```bash
+$ kafka-topics --bootstrap-server localhost:9092 --create --topic second-topic --partitions 3
+Created topic second-topic.
+```
+
+What if we want to specify the replication factor?
+
+```bash
+$ kafka-topics --bootstrap-server localhost:9092 --create --topic third-topic --partitions 3 --replication-factor 2
+Error while executing topic command : Unable to replicate the partition 2 time(s): The target replication factor of 2 cannot be reached because only 1 broker(s) are registered.
+[2024-11-05 21:32:20,900] ERROR org.apache.kafka.common.errors.InvalidReplicationFactorException: Unable to replicate the partition 2 time(s): The target replication factor of 2 cannot be reached because only 1 broker(s) are registered.
+ (kafka.admin.TopicCommand$)
+```
+
+I'm launching Kakfa on my laptop (i.e. one broker), so the error makes sense:
+
+```text
+The target replication factor of 2 cannot be reached because only 1 broker(s) are registered.
+```
+
+This means:
+
+```text
+Number of replication factor <= Number of brokers
+```
+
+So, the correct command would be:
+
+```bash
+$ kafka-topics --bootstrap-server localhost:9092 --create --topic third-topic --partitions 3 --replication-factor 1
+Created topic third-topic.
+```
+
+Now we have three topics, so lets again list them:
+
+```bash
+$ kafka-topics --bootstrap-server localhost:9092 --list                      
+first-topic
+second-topic
+third-topic
+```
+
+How about describing one topic and getting more info about that?
+
+```bash
+$ kafka-topics --bootstrap-server localhost:9092 --describe --topic first-topic
+Topic: first-topic	TopicId: M-s7PwykQXKdewEUxpDDEA	PartitionCount: 1	ReplicationFactor: 1	Configs: segment.bytes=1073741824
+	Topic: first-topic	Partition: 0	Leader: 1	Replicas: 1	Isr: 1
+```
+
+And the last part: deleting those topics:
+
+```bash
+kafka-topics --bootstrap-server localhost:9092 --delete --topic first-topic
+kafka-topics --bootstrap-server localhost:9092 --delete --topic second-opic
+kafka-topics --bootstrap-server localhost:9092 --delete --topic third-topic
+```
+
+</div> <!-- Kafka Topic CLI -->
 
 ## Kafka Producer CLI
 <div id="Kafka-CLI-Tutorial-Kafka-Producer-CLI"></div> <!-- Kafka Producer CLI -->
